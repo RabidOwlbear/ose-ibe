@@ -33,6 +33,6 @@
   ],
   "url": "https://github.com/RabidOwlbear/ose-ibe/",
   "manifest": "https://raw.githubusercontent.com/RabidOwlbear/ose-ibe/master/module.json",
-  "download": "",
+  "download": "https://github.com/RabidOwlbear/ose-ibe/archive/refs/heads/master.zip",
   "readme": "REAMDE.md"
 }
