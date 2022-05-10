@@ -31,8 +31,8 @@
       "type": "module"
     }
   ],
-  "url": "",
-  "manifest": "",
+  "url": "https://github.com/RabidOwlbear/ose-ibe/",
+  "manifest": "https://raw.githubusercontent.com/RabidOwlbear/ose-ibe/master/module.json",
   "download": "",
   "readme": "REAMDE.md"
 }
