@@ -8,7 +8,6 @@
   "compatibleCoreVersion": "9.255",
   "styles": ["./styles/app.css"],
   "esmodules": ["./scripts/app.js"],
-  "socket": true,
   "scripts": [],
   "packs": [
     {
@@ -23,11 +22,6 @@
     {
       "name": "compendium-folders",
       "manifest": "https://raw.githubusercontent.com/earlSt1/vtt-compendium-folders/0.1.1/module.json",
-      "type": "module"
-    },
-    {
-      "name": "socketlib",
-      "manifest": "https://raw.githubusercontent.com/manuelVo/foundryvtt-socketlib/master/module.json",
       "type": "module"
     }
   ],
