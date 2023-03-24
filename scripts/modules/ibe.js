@@ -24,6 +24,31 @@ export const registerIbe = () => {
     ];
   };
   Hooks.on('renderOseActorSheet', async (actor, html) => {
+/*
+    Order of operations:
+    get actor object
+    get list of containers
+    -if containers, add object to array {containerid, containerItemIds}
+    -add containerIds to packedIds
+    get equipped Items - actor items.filter(not included in containerItemids)
+    get weapon items
+    get armor items
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
     const actorObj = actor.object;
 
     if (actorObj.type == 'character') {
@@ -52,17 +77,20 @@ export const registerIbe = () => {
           P += i.data.data.weight ? i.data.data.weight : 0;
         });
 
-        // splitCoins('p', contItems)
+        splitCoins('p', contItems, containerItemIds)
       }
       let aItems = actorObj.items
         .filter((i) => i.type === 'item' && !containerItemIds.includes(i.id) && i.data)
         .filter((i) => (i.data.data.manualTags?.find((t) => t.title === 'Currency') ? false : true));
-      E += aItems.length;
+      // E += aItems.length;
       
       const weapons = actorObj.items.filter((i) => i.type === 'weapon');
       let eWeap = weapons.filter((w) => w.data.data.equipped);
-      E += eWeap.length;
-      P += weapons.length - eWeap.length;
+      let pWeap = weapons.filter((w) => !w.data.data.equipped);
+      eWeap.map(w=>E += w.data.data.weight);
+      pWeap.map(w=>P += w.data.data.weight);
+      // E+= eWeap.length;
+      // P += weapons.length - eWeap.length;
       
       const armor = actorObj.items.filter((i) => i.type === 'armor');
       let eArmor = armor.filter((a) => a.data.data.equipped);
