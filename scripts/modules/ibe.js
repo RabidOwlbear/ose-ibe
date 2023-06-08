@@ -23,7 +23,7 @@ export const registerIbe = () => {
       }
     ];
   };
-  Hooks.on('renderOseActorSheet', async (actor, html) => {
+  Hooks.on('renderActorSheet', async (actor, html) => {
 /*
     Order of operations:
     get actor object
@@ -58,59 +58,72 @@ export const registerIbe = () => {
       let aCont = actorObj.items.filter((i) => i.type === 'container');
       let containerItemIds = [];
       for (let cont of aCont) {
-        let contItems = cont.data.data.itemIds;
+        const contItems = cont.system.itemIds;
         contItems.map((i) => containerItemIds.push(i.id));
-        let items = contItems.filter((i) =>
-          i.data.data.manualTags?.find((t) => t.title.includes('bundle-'))
+
+        let items = contItems.filter(async (i) =>{
+          const itemObj = await actorObj.items.get(i)
+          return itemObj.system.tags?.find((t) => t.title.includes('bundle-'))
             ? false
-            : i.data.data.manualTags?.find((t) => t.title.includes('Currency'))
+            : itemObj.system.tags?.find((t) => t.title.includes('Currency'))
             ? false
             : true
+        }
         );
         
-        let bundles = contItems.filter((i) =>
-          i.data.data.manualTags?.find((t) => t.title.includes('bundle-')) ? true : false
+        let bundles = contItems.filter(async (i) =>{
+          const itemObj = await actorObj.items.get(i);
+          return itemObj.system.tags?.find((t) => t.title.includes('bundle-')) ? true : false
+        }
+          
         );
-        P += countBundle(bundles);
+        P += countBundle(bundles, actorObj);
 
-        items.forEach((i) => {
-          P += i.data.data.weight ? i.data.data.weight : 0;
+        items.forEach(async (i) => {
+          const itemObj = await actorObj.items.get(i)
+          P += itemObj.system.weight ? itemObj.system.weight : 0;
         });
 
-        splitCoins('p', contItems, containerItemIds)
+        splitCoins('p', contItems, containerItemIds, actorObj)
       }
-      let aItems = actorObj.items
-        .filter((i) => i.type === 'item' && !containerItemIds.includes(i.id) && i.data)
-        .filter((i) => (i.data.data.manualTags?.find((t) => t.title === 'Currency') ? false : true));
+      // let aItems = actorObj.items
+      //   .filter((i) => i.type === 'item' && !containerItemIds.includes(i.id) && i.data)
+      //   .filter((i) => (i.system.manualTags?.find((t) => t.title === 'Currency') ? false : true));
       // E += aItems.length;
       
       const weapons = actorObj.items.filter((i) => i.type === 'weapon');
-      let eWeap = weapons.filter((w) => w.data.data.equipped);
-      let pWeap = weapons.filter((w) => !w.data.data.equipped);
-      eWeap.map(w=>E += w.data.data.weight);
-      pWeap.map(w=>P += w.data.data.weight);
+      let eWeap = weapons.filter((w) => w.system.equipped);
+      let pWeap = weapons.filter((w) => !w.system.equipped);
+      eWeap.map(w=>E += w.system.weight);
+      pWeap.map(w=>P += w.system.weight);
       // E+= eWeap.length;
       // P += weapons.length - eWeap.length;
       
       const armor = actorObj.items.filter((i) => i.type === 'armor');
-      let eArmor = armor.filter((a) => a.data.data.equipped);
+      let eArmor = armor.filter((a) => a.system.equipped);
       E += eArmor.length;
       P += armor.length - eArmor.length;
       
       
       let table = OSEIBE.data.table;
-      splitCoins('e', actorObj.items, containerItemIds);
+      splitCoins('e', actorObj.items, containerItemIds, actorObj);
 
       await setRate(E, P, table, actorObj);
 
       addIBEdisplay(html, P, E);
 
-      function splitCoins(type, items, contIds) {
-        
-        const coins = items.filter((i) => i.data.data.manualTags?.find((t) => t.title === 'Currency'));
-        
+      async function splitCoins(type, items, contIds, actor) {
+        const coins = []
+        actor.items.map(async (i) => {
+          let cur = i.system.tags?.find((t) => t.title === 'Currency' && contIds.includes(i.id));
+          if(cur){
+            coins.push(i)
+          }
+        });
         for (let coin of coins) {
-          let qty = coin.data.data.quantity.value;
+          
+          const itemObj = await actor.items.get(coin);
+          let qty = coin.system.quantity.value;
           let mod = 0;
           
           
@@ -136,7 +149,7 @@ export const registerIbe = () => {
       }
 
       async function getRate(E, P, table, actor) {
-        const mod = (await game.settings.get(OSEIBE.moduleName, 'strMod')) ? actor.data.data.scores.str.mod : 0;
+        const mod = (await game.settings.get(OSEIBE.moduleName, 'strMod')) ? actor.system.scores.str.mod : 0;
         let rate;
         
         
@@ -156,8 +169,7 @@ export const registerIbe = () => {
 
       async function setRate(E, P, table, actor) {
         const rate = await getRate(E, P, table, actor);
-        
-        let exInp = html.find(`input[name="data.movement.base"]`);
+        let exInp = html.find(`input[name="system.movement.base"]`);
         let els = html.find(`li.attribute-secondaries`);
         for (let el of els) {
           if (!el.classList.value.includes('attack')) {
@@ -174,18 +186,20 @@ export const registerIbe = () => {
               dispEl.innerText = rate.e;
             }
           }
-          
-          exInp[0].value = rate.x;
-          
+          if(exInp[0]){
+            exInp[0].value = rate.x;
+          }
         }
       }
 
-      function countBundle(arr) {
+      function countBundle(arr, actor) {
         
         let unique = [];
         let wt = 0;
-        arr.map((i) => {
-          let iQty = i.data.data.quantity.value;
+        arr.map(async (i) => {
+
+          const itemObj = await actor.items.get(i);
+          let iQty = itemObj.system.quantity.value;
           let split = iQty / 3;
           let fQty = split % 1 ? Math.floor(split) + 1 : split;
           

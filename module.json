@@ -2,29 +2,39 @@
   "name": "ose-ibe",
   "title": "OSE item based emcumbrance",
   "description": "An extension to the OSE system that adds the optional item based emcrumbrance option.",
-  "author": "RabidOwlbear",
-  "version": "0.0.1",
-  "minimumCoreVerson": "0.8.0",
-  "compatibleCoreVersion": "9.255",
+  "authors": [
+    {
+      "name": "Rabid Owlbear",
+      "url": "https://github.com/RabidOwlbear",
+      "flags": {}
+    }
+  ],
+  "version": "0.0.2",
+  "compatibility": {
+    "minimum": "10",
+    "verified": "11.300",
+    "maximum": "11"
+  },
   "styles": ["./styles/app.css"],
   "esmodules": ["./scripts/app.js"],
   "scripts": [],
-  "packs": [
-    {
-      "name": "ose-ibe-journal",
-      "label": "Item Based Encumbrance",
-      "path": "packs/journals.db",
-      "entity": "JournalEntry",
-      "module": "ose-ibe"
-    }
-  ],
-  "dependencies": [
-    {
-      "name": "compendium-folders",
-      "manifest": "https://raw.githubusercontent.com/earlSt1/vtt-compendium-folders/0.1.1/module.json",
-      "type": "module"
-    }
-  ],
+  "packs": [],
+  "relationships": {
+    "systems": [
+      {
+        "id": "ose",
+        "type": "system",
+        "compatibility": {}
+      },
+      {
+        "id": "ose-dev",
+        "type": "system",
+        "compatibility": {}
+      }
+    ],
+    "requires": [
+]
+  },
   "url": "https://github.com/RabidOwlbear/ose-ibe/",
   "manifest": "https://raw.githubusercontent.com/RabidOwlbear/ose-ibe/master/module.json",
   "download": "https://github.com/RabidOwlbear/ose-ibe/archive/refs/heads/master.zip",
